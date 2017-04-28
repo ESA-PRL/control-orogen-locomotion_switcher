@@ -4,6 +4,10 @@
 #define LOCOMOTION_SWITCHER_TASK_TASK_HPP
 
 #include "locomotion_switcher/TaskBase.hpp"
+#include <base/samples/Joints.hpp>
+#include <base/commands/Joints.hpp>
+#include <base/commands/Motion2D.hpp>
+#include <vector>
 
 namespace locomotion_switcher {
 
@@ -24,13 +28,20 @@ tasks/Task.cpp, and will be put in the locomotion_switcher namespace.
      \endverbatim
      *  It can be dynamically adapted when the deployment is called with a prefix argument. 
      */
+    enum SwitcherState {INITIAL, D2WW, WW2D, DRIVING, WHEEL_WALKING};
+
     class Task : public TaskBase
     {
 	friend class TaskBase;
     protected:
-
-
-
+	double window;
+	SwitcherState state;
+	base::commands::Joints ww_commands;
+	base::commands::Joints lc_commands;
+	base::commands::Joints joints_commands;
+	base::commands::Joints joints_readings;
+	int current_locomotion_mode;
+	int new_locomotion_mode;
     public:
         /** TaskContext constructor for Task
          * \param name Name of the task. This name needs to be unique to make it identifiable via nameservices.
@@ -94,6 +105,10 @@ tasks/Task.cpp, and will be put in the locomotion_switcher namespace.
          *
          * Call recover() to go back in the Runtime state.
          */
+
+	bool isZeroSteering();
+	bool isZeroWalking();
+
         void errorHook();
 
         /** This hook is called by Orocos when the state machine transitions
