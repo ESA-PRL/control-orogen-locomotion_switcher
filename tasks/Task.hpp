@@ -42,6 +42,8 @@ tasks/Task.cpp, and will be put in the locomotion_switcher namespace.
 	base::commands::Joints joints_readings;
 	int current_locomotion_mode;
 	int new_locomotion_mode;
+	bool new_lc_command;
+	bool new_ww_command;
     public:
         /** TaskContext constructor for Task
          * \param name Name of the task. This name needs to be unique to make it identifiable via nameservices.
@@ -108,6 +110,9 @@ tasks/Task.cpp, and will be put in the locomotion_switcher namespace.
 
 	bool isZeroSteering();
 	bool isZeroWalking();
+
+	base::commands::Joints rectifySteering();
+	base::commands::Joints rectifyWalking();
 
         void errorHook();
 
