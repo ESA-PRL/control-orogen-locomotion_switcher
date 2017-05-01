@@ -97,6 +97,8 @@ void Task::updateHook()
 
     if ((state == WHEEL_WALKING)&&(new_ww_command))
     {
+	//std::cout<<"SWITCHER: new wheel-walking command" <<std::endl;
+	_joints_commands.write(ww_commands);
 	new_ww_command = false;
     }
 
@@ -104,6 +106,9 @@ void Task::updateHook()
 
 bool Task::isZeroSteering()
 {
+    /*for (unsigned int i = 0; i < 6; i++)
+	if (fabs(joints_readings[i].speed) > 0)
+	    return false;*/
     for (unsigned int i = 6; i < 10; i++)
 	    if (fabs(joints_readings[i].position) > window)
 		return false;
@@ -128,12 +133,19 @@ bool Task::isZeroWalking()
 base::commands::Joints Task::rectifySteering()
 {
     base::commands::Joints rJoints;
-    rJoints.resize(16);
+    rJoints.resize(19);
+    for (unsigned int i = 0; i < 6; i++)
+        rJoints[i].speed = 0;
     for (unsigned int i = 0; i < 16; i++)
 	if ((i > 5)&&(i < 10))
-	    rJoints[i].position = 0.0;
+	    rJoints[i].position = 0;
 	else
-	    rJoints[i].speed = 0.0;
+	    rJoints[i].speed = 0;
+    for(uint i=16; i<19; i++)
+    {
+	rJoints[i].speed = base::NaN<double>();
+	rJoints[i].position = base::NaN<double>();
+    }
     return rJoints;
 }
 
