@@ -117,15 +117,15 @@ bool Task::isZeroSteering()
 
 bool Task::isZeroWalking()
 {
-    for (unsigned int i = 0; i < 6; i++)
+    /*for (unsigned int i = 0; i < 6; i++)
 	if (fabs(joints_readings[i].speed) > 0)
-	    return false;
+	    return false;*/
     for (unsigned int i = 10; i < 16; i++)
     {
 	if (fabs(joints_readings[i].position) > 2*window)
 	    return false;
-	if (fabs(joints_readings[i].speed) > 0)
-	    return false;
+	/*if (fabs(joints_readings[i].speed) > 0)
+	    return false;*/
     }
     return true;
 }

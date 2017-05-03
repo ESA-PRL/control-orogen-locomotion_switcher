@@ -34,6 +34,7 @@ Orocos.run 'locomotion_control::Task' => 'locomotion_control',
   joystick = Orocos.name_service.get 'joystick'
   Orocos.conf.apply(joystick, ['default', 'logitech_gamepad'], :override => true)
   joystick.configure
+  puts "joystick configured"
         
   simulation_vrep.joints_readings.connect_to          locomotion_control.joints_readings
   simulation_vrep.joints_readings.connect_to          wheel_walking_control.joint_readings
