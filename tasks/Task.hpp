@@ -28,18 +28,22 @@ tasks/Task.cpp, and will be put in the locomotion_switcher namespace.
      \endverbatim
      *  It can be dynamically adapted when the deployment is called with a prefix argument. 
      */
-    enum SwitcherState {INITIAL, D2WW, WW2D, DRIVING, WHEEL_WALKING};
+    enum SwitcherState {INITIAL, LC, WWC, LC2WWC, WWC2LC};
 
     class Task : public TaskBase
     {
 	friend class TaskBase;
     protected:
+	bool first_iteration;
 	double window;
 	SwitcherState state;
+	std::vector<int> last_button_values;
+	std::vector<double> last_axes_values;
 	base::commands::Joints ww_commands;
 	base::commands::Joints lc_commands;
 	base::commands::Joints joints_commands;
 	base::commands::Joints joints_readings;
+	base::samples::Joints bema_joints;
 	int current_locomotion_mode;
 	int new_locomotion_mode;
 	bool new_lc_command;
@@ -113,6 +117,8 @@ tasks/Task.cpp, and will be put in the locomotion_switcher namespace.
 
 	base::commands::Joints rectifySteering();
 	base::commands::Joints rectifyWalking();
+
+        void evaluateJoystickCommands(const controldev::RawCommand joystick_commands);
 
         void errorHook();
 
