@@ -6,7 +6,7 @@
 using namespace locomotion_switcher;
 
 
-//__CONSTRUCTORS__\\
+//__CONSTRUCTORS
 
 Task::Task(std::string const& name)
     : TaskBase(name)
@@ -21,14 +21,14 @@ Task::Task(std::string const& name, RTT::ExecutionEngine* engine)
 }
 
 
-//__DECONSTRUCTOR__\\
+//__DECONSTRUCTOR
 
 Task::~Task()
 {
 }
 
 
-//__CONFIGURE__\\
+//__CONFIGURE
 
 bool Task::configureHook()
 {
@@ -38,7 +38,7 @@ bool Task::configureHook()
 }
 
 
-//__START__\\
+//__START
 
 bool Task::startHook()
 {
@@ -53,7 +53,7 @@ bool Task::startHook()
 }
 
 
-//__UPDATE__\\
+//__UPDATE
 
 void Task::updateHook()
 {
@@ -69,10 +69,12 @@ void Task::updateHook()
 	    _lc_motion_command.write(joystick_motion_command);
 
     if (_joints_readings.read(joints_readings) == RTT::NewData)
+    {
 	if (state == LC)
 	    _lc_readings.write(joints_readings);
 	else if (state == WWC)
 	    _ww_readings.write(joints_readings);
+    }
 
     if (_lc_commands.read(lc_commands) == RTT::NewData)
 	if (state == LC)
@@ -88,6 +90,7 @@ void Task::updateHook()
 
   // Transition to Wheelwalking control
     if (state == LC2WWC)
+    {
 	if (isZeroSteering())
 	{
             initWW(joystick_command);
@@ -96,20 +99,23 @@ void Task::updateHook()
 	}
 	else
 	    _joints_commands.write(rectifySteering());
+    }
 
   // Transition to Locomotion Control
     if (state == WWC2LC)
+    {
 	if(isZeroWalking())
         {
 	    state = LC;
             std::cout<<"SWITCHER: LC in control" <<std::endl;
         }
 	else
-	    _joints_commands.write(rectifyWalking());    
+	    _joints_commands.write(rectifyWalking());
+    }    
 }
 
 
-//__CHECK_IF_STEERING_JOINT_POSITIONS_ARE_ZERO__\\
+//__CHECK_IF_STEERING_JOINT_POSITIONS_ARE_ZERO
 
 bool Task::isZeroSteering()
 {
@@ -120,7 +126,7 @@ bool Task::isZeroSteering()
 }
 
 
-//__CHECK_IF_WALKING_JOINT_POSITIONS_ARE_ZERO__\\
+//__CHECK_IF_WALKING_JOINT_POSITIONS_ARE_ZERO
 
 bool Task::isZeroWalking()
 {
@@ -179,7 +185,7 @@ base::commands::Joints Task::rectifyWalking()
 }
 
 
-//__JOYSTICK_COMMANDS_EVALUATION__\\
+//__JOYSTICK_COMMANDS_EVALUATION
 
 void Task::evaluateJoystickCommands(const controldev::RawCommand joystick_command)
 {
@@ -192,6 +198,7 @@ void Task::evaluateJoystickCommands(const controldev::RawCommand joystick_comman
 
     if ((joystick_command.buttons[5] == 1 && last_button_values[5] == 0) && 
         (joystick_command.buttons[4] == 1 && last_button_values[4] == 0)) //BTN_Z (right top) + BTN_Y (left top)
+    {
         if (state == LC)
 	{
 	    std::cout<<"SWITCHER: switching to WWC" <<std::endl;
@@ -207,6 +214,7 @@ void Task::evaluateJoystickCommands(const controldev::RawCommand joystick_comman
 	    std::cout<<"SWITCHER: switching to LC" <<std::endl;
 	    state = WWC2LC;
         }
+    }
 
     if (state == WWC)
 	_ww_joystick_command.write(joystick_command);
@@ -216,7 +224,7 @@ void Task::evaluateJoystickCommands(const controldev::RawCommand joystick_comman
 }
 
 
-//__REQUIRED_INITIALIZATION_IN_WHEELWALKING_CONTROL__\\
+//__REQUIRED_INITIALIZATION_IN_WHEELWALKING_CONTROL
 
 void Task::initWW(const controldev::RawCommand joystick_command)
 {
