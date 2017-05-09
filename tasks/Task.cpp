@@ -1,14 +1,12 @@
 /* Generated from orogen/lib/orogen/templates/tasks/Task.cpp */
 
-
-
-
-
-
 #include "Task.hpp"
 
 
 using namespace locomotion_switcher;
+
+
+//__CONSTRUCTORS__\\
 
 Task::Task(std::string const& name)
     : TaskBase(name)
@@ -22,6 +20,9 @@ Task::Task(std::string const& name, RTT::ExecutionEngine* engine)
 	state = INITIAL;
 }
 
+
+//__DECONSTRUCTOR__\\
+
 Task::~Task()
 {
 }
@@ -33,8 +34,6 @@ bool Task::configureHook()
 {
     if (! TaskBase::configureHook())
         return false;
-    window = 0.01;
-    first_iteration = true;
     return true;
 }
 
@@ -46,8 +45,8 @@ bool Task::startHook()
     if (! TaskBase::startHook())
         return false;
     state = INITIAL;
-    new_lc_command = false;
-    new_ww_command = false;
+    window = 0.01;
+    first_iteration = true;
     std::cout<<"SWITCHER: INITIAL state" <<std::endl;
     current_locomotion_mode = -1;
     return true;
@@ -85,51 +84,49 @@ void Task::updateHook()
 
     if (_bema_joints.read(bema_joints) == RTT::NewData)
 	if (state == LC);
-	    // FIX THIS
+	    // FIX THIS TO INCLUDE BEMA JOINTS FUNCTIONALITY
 
-  //Transition to wheelwalking_control
-
+  // Transition to Wheelwalking control
     if (state == LC2WWC)
 	if (isZeroSteering())
 	{
             initWW(joystick_command);
 	    state = WWC;
+            std::cout<<"SWITCHER: WW in control" <<std::endl;
 	}
 	else
 	    _joints_commands.write(rectifySteering());
 
+  // Transition to Locomotion Control
     if (state == WWC2LC)
 	if(isZeroWalking())
+        {
 	    state = LC;
+            std::cout<<"SWITCHER: LC in control" <<std::endl;
+        }
 	else
 	    _joints_commands.write(rectifyWalking());    
 }
 
+
+//__CHECK_IF_STEERING_JOINT_POSITIONS_ARE_ZERO__\\
+
 bool Task::isZeroSteering()
 {
-    /*for (unsigned int i = 0; i < 6; i++)
-	if (fabs(joints_readings[i].speed) > 0)
-	    return false;*/
     for (unsigned int i = 6; i < 10; i++)
 	    if (fabs(joints_readings[i].position) > window)
 		return false;
-    std::cout<<"SWITCHER: WW in control" <<std::endl;
     return true;
 }
 
+
+//__CHECK_IF_WALKING_JOINT_POSITIONS_ARE_ZERO__\\
+
 bool Task::isZeroWalking()
 {
-    /*for (unsigned int i = 0; i < 6; i++)
-	if (fabs(joints_readings[i].speed) > 0)
-	    return false;*/
     for (unsigned int i = 10; i < 16; i++)
-    {
 	if (fabs(joints_readings[i].position) > 2*window)
 	    return false;
-	/*if (fabs(joints_readings[i].speed) > 0)
-	    return false;*/
-    }
-    std::cout<<"SWITCHER: LC in control" <<std::endl;
     return true;
 }
 
@@ -218,6 +215,9 @@ void Task::evaluateJoystickCommands(const controldev::RawCommand joystick_comman
     last_axes_values = joystick_command.axes.elements;
 }
 
+
+//__REQUIRED_INITIALIZATION_IN_WHEELWALKING_CONTROL__\\
+
 void Task::initWW(const controldev::RawCommand joystick_command)
 {
     controldev::RawCommand joystick_rectifier = joystick_command;
@@ -226,14 +226,19 @@ void Task::initWW(const controldev::RawCommand joystick_command)
     _ww_joystick_command.write(joystick_rectifier);
 }
 
+
 void Task::errorHook()
 {
     TaskBase::errorHook();
 }
+
+
 void Task::stopHook()
 {
     TaskBase::stopHook();
 }
+
+
 void Task::cleanupHook()
 {
     TaskBase::cleanupHook();
