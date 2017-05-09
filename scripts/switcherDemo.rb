@@ -13,6 +13,10 @@ Orocos.conf.load_dir('../../../bundles/exoter/config/orogen/')
 Orocos.run 'locomotion_control::Task' => 'locomotion_control',
            'locomotion_switcher::Task' => 'locomotion_switcher',
            'wheelwalking_control::Task' => 'wheel_walking_control',
+           'platform_driver::Task' => 'platform_driver',
+           'read_joint_dispatcher::Task' => 'read_joint_dispatcher',
+           'command_joint_dispatcher::Task' => 'command_joint_dispatcher',
+           'ptu_control::Task' => 'ptu_control',
            'controldev::JoystickTask'=>'joystick' do
 
   ## SETUP ##
