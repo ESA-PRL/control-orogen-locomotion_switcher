@@ -46,5 +46,6 @@ task_context "Task" do
     output_port "walking_command_front",  "double"
     output_port "walking_command_rear",   "double"
 
-    port_driven "joints_readings", "joystick_command", "joystick_motion_command"
+    #port_driven "joints_readings", "joystick_command", "joystick_motion_command"
+    port_driven
 end
