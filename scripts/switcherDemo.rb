@@ -102,13 +102,13 @@ Orocos.run 'locomotion_control::Task' => 'locomotion_control',
     locomotion_switcher.ww_joystick_command.connect_to   wheel_walking_control.joystick_commands
     locomotion_switcher.lc_readings.connect_to           locomotion_control.joints_readings
     locomotion_switcher.lc_motion_command.connect_to     locomotion_control.motion_command
-    locomotion_switcher.bema_command.connect_to          locomotion_control.bema_command
-    locomotion_switcher.walking_command_front.connect_to locomotion_control.walking_command_front
-    locomotion_switcher.walking_command_rear.connect_to  locomotion_control.walking_command_rear
+  # locomotion_switcher.bema_command.connect_to          locomotion_control.bema_command
+  # locomotion_switcher.walking_command_front.connect_to locomotion_control.walking_command_front
+  # locomotion_switcher.walking_command_rear.connect_to  locomotion_control.walking_command_rear
 
   # Connecting locomotion_control to locomotion_switcher
     locomotion_control.joints_commands.connect_to        locomotion_switcher.lc_commands
-    locomotion_control.bema_joints.connect_to            locomotion_switcher.bema_joints
+  # locomotion_control.bema_joints.connect_to            locomotion_switcher.bema_joints
 
   # Connecting wheel_walking_control to locomotion switcher
     wheel_walking_control.joint_commands.connect_to      locomotion_switcher.ww_commands   
