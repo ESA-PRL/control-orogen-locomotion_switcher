@@ -117,6 +117,7 @@ tasks/Task.cpp, and will be put in the locomotion_switcher namespace.
 
 	base::commands::Joints rectifySteering();
 	base::commands::Joints rectifyWalking();
+        void initWW(const controldev::RawCommand joystick_command);
 
         void evaluateJoystickCommands(const controldev::RawCommand joystick_commands);
 

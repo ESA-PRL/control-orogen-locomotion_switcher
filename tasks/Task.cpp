@@ -1,5 +1,10 @@
 /* Generated from orogen/lib/orogen/templates/tasks/Task.cpp */
 
+
+
+
+
+
 #include "Task.hpp"
 
 
@@ -82,9 +87,14 @@ void Task::updateHook()
 	if (state == LC);
 	    // FIX THIS
 
+  //Transition to wheelwalking_control
+
     if (state == LC2WWC)
 	if (isZeroSteering())
+	{
+            initWW(joystick_command);
 	    state = WWC;
+	}
 	else
 	    _joints_commands.write(rectifySteering());
 
@@ -145,7 +155,7 @@ base::commands::Joints Task::rectifySteering()
 
 base::commands::Joints Task::rectifyWalking()
 {
-    /*base::commands::Joints rJoints;
+    base::commands::Joints rJoints;
     rJoints.resize(19);
     double gamma = 0.15;
     double L = 0.1253;
@@ -167,7 +177,7 @@ base::commands::Joints Task::rectifyWalking()
 	rJoints[i].speed = base::NaN<double>();
 	rJoints[i].position = base::NaN<double>();
     }
-    return rJoints;*/
+    return rJoints;
     
 }
 
@@ -206,6 +216,14 @@ void Task::evaluateJoystickCommands(const controldev::RawCommand joystick_comman
 
     last_button_values = joystick_command.buttons.elements;
     last_axes_values = joystick_command.axes.elements;
+}
+
+void Task::initWW(const controldev::RawCommand joystick_command)
+{
+    controldev::RawCommand joystick_rectifier = joystick_command;
+    joystick_rectifier.buttons[6] = 1; //Engage Kill Switch
+    joystick_rectifier.buttons[8] = 1; //Return to Initial Configuration
+    _ww_joystick_command.write(joystick_rectifier);
 }
 
 void Task::errorHook()
