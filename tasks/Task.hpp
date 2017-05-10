@@ -25,7 +25,10 @@ namespace locomotion_switcher {
 	    base::commands::Joints ww_commands;
 	    base::commands::Joints lc_commands;
 	    base::commands::Joints joints_commands;
+          // These are the readings from all active+passive joints
 	    base::commands::Joints joints_readings;
+          // These are the readings from the motors (active joints)
+            base::commands::Joints motors_readings;
 	    base::samples::Joints bema_joints;
 	    int current_locomotion_mode;
 	    int new_locomotion_mode;

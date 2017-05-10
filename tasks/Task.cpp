@@ -69,12 +69,12 @@ void Task::updateHook()
 	    _lc_motion_command.write(joystick_motion_command);
 
     if (_joints_readings.read(joints_readings) == RTT::NewData)
-    {
-	if (state == LC)
-	    _lc_readings.write(joints_readings);
-	else if (state == WWC)
+	if (state == WWC)
 	    _ww_readings.write(joints_readings);
-    }
+
+    if (_motors_readings.read(motors_readings) == RTT::NewData)
+	if (state == LC)
+	    _lc_readings.write(motors_readings);
 
     if (_lc_commands.read(lc_commands) == RTT::NewData)
 	if (state == LC)
@@ -119,8 +119,11 @@ void Task::updateHook()
 
 bool Task::isZeroSteering()
 {
-    for (unsigned int i = 6; i < 10; i++)
-	    if (fabs(joints_readings[i].position) > window)
+    for (unsigned int i = 0; i < 10; i++)
+	if (fabs(motors_readings[i].speed) > window)
+	    return false;
+    for (unsigned int i = 10; i < 16; i++)
+	    if ((fabs(motors_readings[i].position) > 2*window)||(fabs(motors_readings[i].speed) > window))
 		return false;
     return true;
 }
@@ -130,8 +133,11 @@ bool Task::isZeroSteering()
 
 bool Task::isZeroWalking()
 {
+    for (unsigned int i = 0; i < 10; i++)
+	if (fabs(motors_readings[i].speed) > window)
+	    return false;
     for (unsigned int i = 10; i < 16; i++)
-	if (fabs(joints_readings[i].position) > 2*window)
+	if ((fabs(motors_readings[i].position) > 2*window)||(fabs(motors_readings[i].speed) > window))
 	    return false;
     return true;
 }
@@ -164,12 +170,12 @@ base::commands::Joints Task::rectifyWalking()
     double L = 0.1253;
     double R = 0.07;
     for(uint i=0;i<6;i++){
-	if(joints_readings[10+i].position > 2*window){
-	    rJoints[10+i].speed = -gamma*joints_readings[10+i].position;
-	    rJoints[i].speed = -gamma*(1+cos(joints_readings[10+i].position)*L/R)*joints_readings[10+i].position;
-	}else if(joints_readings[10+i].position < -2*window){
-	    rJoints[10+i].speed = -gamma*joints_readings[10+i].position;
-	    rJoints[i].speed = -gamma*(1+cos(joints_readings[10+i].position)*L/R)*joints_readings[10+i].position;
+	if(motors_readings[10+i].position > 2*window){
+	    rJoints[10+i].speed = -gamma*motors_readings[10+i].position;
+	    rJoints[i].speed = gamma*(1+cos(motors_readings[10+i].position)*L/R)*motors_readings[10+i].position;
+	}else if(motors_readings[10+i].position < -2*window){
+	    rJoints[10+i].speed = -gamma*motors_readings[10+i].position;
+	    rJoints[i].speed = gamma*(1+cos(motors_readings[10+i].position)*L/R)*motors_readings[10+i].position;
 	}else{
 	    rJoints[10+i].speed = 0.0;
 	    rJoints[i].speed = 0.0;

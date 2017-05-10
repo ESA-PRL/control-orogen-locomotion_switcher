@@ -21,6 +21,7 @@ task_context "Task" do
 
     # From Reconfigurable Rover
     input_port "joints_readings",         "base/samples/Joints"
+    input_port "motors_readings",         "base/samples/Joints"
 
     # From wheelwalking_control
     input_port "ww_commands",             "base/commands/Joints"

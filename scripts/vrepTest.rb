@@ -50,6 +50,7 @@ Orocos.run 'locomotion_control::Task' => 'locomotion_control',
   locomotion_switcher.walking_command_rear.connect_to  locomotion_control.walking_command_rear
 
   simulation_vrep.joints_readings.connect_to           locomotion_switcher.joints_readings
+  simulation_vrep.motors_readings.connect_to           locomotion_switcher.motors_readings
 
   locomotion_control.joints_commands.connect_to        locomotion_switcher.lc_commands
   locomotion_control.bema_joints.connect_to            locomotion_switcher.bema_joints

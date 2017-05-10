@@ -117,7 +117,8 @@ Orocos.run 'locomotion_control::Task' => 'locomotion_control',
     platform_driver.joints_readings.connect_to           read_joint_dispatcher.joints_readings
 
   # Connect ports: read_joint_dispatcher to locomotion switcher
-    read_joint_dispatcher.motors_samples.connect_to      locomotion_switcher.joints_readings
+    read_joint_dispatcher.motors_samples.connect_to      locomotion_switcher.motors_readings
+    read_joint_dispatcher.joints_samples.connect_to      locomotion_switcher.joints_readings
 
   # Connect ports: command_joint_dispatcher to platform_driver
     command_joint_dispatcher.motors_commands.connect_to  platform_driver.joints_commands
