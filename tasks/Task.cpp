@@ -49,6 +49,8 @@ bool Task::startHook()
     first_iteration = true;
     std::cout<<"SWITCHER: INITIAL state" <<std::endl;
     current_locomotion_mode = -1;
+    joystick_motion_command.translation = 0.0;
+    joystick_motion_command.rotation = 0.0;
     return true;
 }
 
@@ -59,40 +61,116 @@ void Task::updateHook()
 {
     TaskBase::updateHook();
     controldev::RawCommand joystick_command;
-    base::commands::Motion2D joystick_motion_command;
+    for(int i = 0; i < 12; i++)
+    {
+        joystick_command.buttons.elements.push_back(0);
+    }
+    for(int i = 0; i < 8; i++)
+    {
+        joystick_command.axes.elements.push_back(0);
+    }
+    if (state == INITIAL)
+        _ww_joystick_command.write(joystick_command);
+
+    
+    std::vector< int16_t > locomotionVector;
+    base::samples::RigidBodyState pose;
+    base::Waypoint currentWaypoint;
+    int current_segment;
 
     if (_joystick_command.read(joystick_command) == RTT::NewData)
         evaluateJoystickCommands(joystick_command);
 
-    if (_joystick_motion_command.read(joystick_motion_command) == RTT::NewData)
-        if (state == LC)
-	    _lc_motion_command.write(joystick_motion_command);
+    if (_pose.read(pose) == RTT::NewData);
+
+    if (_currentWaypoint.read(currentWaypoint) == RTT::NewData);
+
+    if (_trajectory.read(trajectory) == RTT::NewData);
+
+    if (_locomotionVector.read(locomotionVector) == RTT::NewData)
+	if (state == INITIAL)
+        {
+            std::cout<<"SWITCHER: Locomotion Vector Received, going to Locomotion Control State" <<std::endl;
+            state = LC;
+        }
+	    
+
+    if (_current_segment.read(current_segment) == RTT::NewData)
+    {
+        //std::cout<<"SWITCHER: current segment: " << current_segment << " with mode " << locomotionVector[current_segment] <<std::endl;
+        if (state != INITIAL)
+        {
+            if ((locomotionVector[current_segment] == 0) && (state == WWC))
+                state = WWC2LC;
+            if ((locomotionVector[current_segment] == 1) && (state == LC))
+            {
+                std::cout<<"SWITCHER: waypoint heading = " << trajectory[current_segment].heading <<std::endl;
+                std::cout<<"SWITCHER: Yaw = " << pose.getYaw() <<std::endl;
+                std::cout<<"SWITCHER: resultado = " << fabs(pose.getYaw() - currentWaypoint.heading) <<std::endl;
+                state = ALIGNING;
+            }
+        }
+    }
+
+    if (_joystick_motion_command.read(joystick_motion_command) == RTT::NewData);
+
+    if (state == LC)
+	_lc_motion_command.write(joystick_motion_command);
+
 
     if (_joints_readings.read(joints_readings) == RTT::NewData)
 	if (state == WWC)
+        {
 	    _ww_readings.write(joints_readings);
+        }
 
     if (_motors_readings.read(motors_readings) == RTT::NewData)
-	if (state == LC)
+	if ((state == LC)||(state == ALIGNING))
 	    _lc_readings.write(motors_readings);
 
     if (_lc_commands.read(lc_commands) == RTT::NewData)
-	if (state == LC)
+	if ((state == LC)||(state == ALIGNING))
 	    _joints_commands.write(lc_commands);
 
     if (_ww_commands.read(ww_commands) == RTT::NewData)
 	if (state == WWC)
+        {
 	    _joints_commands.write(ww_commands);
+        }
 
     if (_bema_joints.read(bema_joints) == RTT::NewData)
 	if (state == LC);
 	    // FIX THIS TO INCLUDE BEMA JOINTS FUNCTIONALITY
 
   // Transition to Wheelwalking control
+
+    if (state == ALIGNING)
+    {
+        if (fabs(pose.getYaw() - trajectory[current_segment].heading) < 0.01)
+        {
+            state = LC2WWC;
+        }
+        else
+        {
+            joystick_motion_command.translation = 0.0;
+            if ((pose.getYaw() - trajectory[current_segment].heading) < 0.0)
+            {
+                joystick_motion_command.rotation = 0.01 + trajectory[current_segment].heading - pose.getYaw();
+            }
+            else
+            {
+                joystick_motion_command.rotation = -0.01 + trajectory[current_segment].heading - pose.getYaw();
+            }
+	    _lc_motion_command.write(joystick_motion_command);
+        }
+    }
+
     if (state == LC2WWC)
     {
+        
 	if (isZeroSteering())
 	{
+	    std::cout<<"SWITCHER: steering joints are rectified" <<std::endl;
             initWW(joystick_command);
 	    state = WWC;
             std::cout<<"SWITCHER: WW in control" <<std::endl;
@@ -158,7 +236,7 @@ base::commands::Joints Task::rectifySteering()
 	rJoints[i].speed = base::NaN<double>();
 	rJoints[i].position = base::NaN<double>();
     }
-    std::cout<<"SWITCHER: rectifying steering joints" <<std::endl;
+    //std::cout<<"SWITCHER: rectifying steering joints" <<std::endl;
     return rJoints;
 }
 
@@ -189,7 +267,6 @@ base::commands::Joints Task::rectifyWalking()
     return rJoints;
     
 }
-
 
 //__JOYSTICK_COMMANDS_EVALUATION
 
@@ -235,9 +312,15 @@ void Task::evaluateJoystickCommands(const controldev::RawCommand joystick_comman
 void Task::initWW(const controldev::RawCommand joystick_command)
 {
     controldev::RawCommand joystick_rectifier = joystick_command;
-    joystick_rectifier.buttons[6] = 1; //Engage Kill Switch
-    joystick_rectifier.buttons[8] = 1; //Return to Initial Configuration
-    _ww_joystick_command.write(joystick_rectifier);
+    //joystick_rectifier.buttons[6] = 1; //Engage Kill Switch
+    //joystick_rectifier.buttons[1] = 1; //Side-By-Side
+    //joystick_rectifier.buttons[5] = 1;
+    //joystick_rectifier.buttons[7] = 1; //Disengage Kill Switch
+    //joystick_rectifier.buttons[8] = 1; //Return to Initial Configuration
+    //joystick_rectifier.axes[5] = 1;
+    //_ww_joystick_command.write(joystick_rectifier);
+    _kill_switch.write(false);
+    std::cout<<"SWITCHER: deactivating kill switch on wheelwalking_control" <<std::endl;
 }
 
 

@@ -11,7 +11,7 @@
 
 namespace locomotion_switcher {
 
-    enum SwitcherState {INITIAL, LC, WWC, LC2WWC, WWC2LC};
+    enum SwitcherState {INITIAL, LC, WWC, ALIGNING, LC2WWC, WWC2LC};
 
     class Task : public TaskBase
     {
@@ -29,7 +29,9 @@ namespace locomotion_switcher {
 	    base::commands::Joints joints_readings;
           // These are the readings from the motors (active joints)
             base::commands::Joints motors_readings;
+            base::commands::Motion2D joystick_motion_command;
 	    base::samples::Joints bema_joints;
+            std::vector<base::Waypoint> trajectory;
 	    int current_locomotion_mode;
 	    int new_locomotion_mode;
         public:
