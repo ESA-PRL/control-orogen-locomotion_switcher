@@ -224,6 +224,29 @@ base::commands::Joints Task::rectifySteering()
 {
     base::commands::Joints rJoints;
     rJoints.resize(19);
+    rJoints.names[0] = "WHEEL_DRIVE_FL";
+    rJoints.names[1] = "WHEEL_DRIVE_FR";
+    rJoints.names[2] = "WHEEL_DRIVE_CL";
+    rJoints.names[3] = "WHEEL_DRIVE_CR";
+    rJoints.names[4] = "WHEEL_DRIVE_BL";
+    rJoints.names[5] = "WHEEL_DRIVE_BR";
+
+    rJoints.names[6] = "WHEEL_STEER_FL";
+    rJoints.names[7] = "WHEEL_STEER_FR";
+    rJoints.names[8] = "WHEEL_STEER_BL";
+    rJoints.names[9] = "WHEEL_STEER_BR";
+
+    rJoints.names[10] = "WHEEL_WALK_FL";
+    rJoints.names[11] = "WHEEL_WALK_FR";
+    rJoints.names[12] = "WHEEL_WALK_CL";
+    rJoints.names[13] = "WHEEL_WALK_CR";
+    rJoints.names[14] = "WHEEL_WALK_BL";
+    rJoints.names[15] = "WHEEL_WALK_BR";
+
+    rJoints.names[16] = "WHEEL_DRIVE_GROUP";
+    rJoints.names[17] = "WHEEL_STEER_GROUP";
+    rJoints.names[18] = "WHEEL_WALK_GROUP";
+
     for (unsigned int i = 0; i < 6; i++)
         rJoints[i].speed = 0;
     for (unsigned int i = 0; i < 16; i++)
@@ -244,6 +267,28 @@ base::commands::Joints Task::rectifyWalking()
 {
     base::commands::Joints rJoints;
     rJoints.resize(19);
+    rJoints.names[0] = "WHEEL_DRIVE_FL";
+    rJoints.names[1] = "WHEEL_DRIVE_FR";
+    rJoints.names[2] = "WHEEL_DRIVE_CL";
+    rJoints.names[3] = "WHEEL_DRIVE_CR";
+    rJoints.names[4] = "WHEEL_DRIVE_BL";
+    rJoints.names[5] = "WHEEL_DRIVE_BR";
+
+    rJoints.names[6] = "WHEEL_STEER_FL";
+    rJoints.names[7] = "WHEEL_STEER_FR";
+    rJoints.names[8] = "WHEEL_STEER_BL";
+    rJoints.names[9] = "WHEEL_STEER_BR";
+
+    rJoints.names[10] = "WHEEL_WALK_FL";
+    rJoints.names[11] = "WHEEL_WALK_FR";
+    rJoints.names[12] = "WHEEL_WALK_CL";
+    rJoints.names[13] = "WHEEL_WALK_CR";
+    rJoints.names[14] = "WHEEL_WALK_BL";
+    rJoints.names[15] = "WHEEL_WALK_BR";
+
+    rJoints.names[16] = "WHEEL_DRIVE_GROUP";
+    rJoints.names[17] = "WHEEL_STEER_GROUP";
+    rJoints.names[18] = "WHEEL_WALK_GROUP";
     double gamma = 0.15;
     double L = 0.1253;
     double R = 0.07;
