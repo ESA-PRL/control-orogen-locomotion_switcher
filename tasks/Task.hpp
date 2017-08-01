@@ -34,6 +34,7 @@ namespace locomotion_switcher {
             std::vector<base::Waypoint> trajectory;
 	    int current_locomotion_mode;
 	    int new_locomotion_mode;
+            int locomotionMode;
         public:
             Task(std::string const& name = "locomotion_switcher::Task");
             Task(std::string const& name, RTT::ExecutionEngine* engine);

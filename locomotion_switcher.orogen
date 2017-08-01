@@ -17,6 +17,7 @@ task_context "Task" do
 
     # From path_planning
     input_port "locomotionVector",        "/std/vector<int16_t>"
+    input_port "locomotionMode",        "int"
 
     # From waypoint_navigation
     input_port "current_segment",         "int"
