@@ -103,10 +103,9 @@ void Task::updateHook()
         }
     }*/
 
-    if (_locomotionMode.read(locomotionMode) == RTT::NewData)
+    if (state == INITIAL)
     {
-        std::cout<<"SWITCHER: Locomotion Mode Received: " << locomotionMode <<std::endl;
-        if (state == INITIAL)
+        if (_locomotionMode.read(locomotionMode) == RTT::NewData)
         {
             if(locomotionMode == 0)
             {
@@ -116,13 +115,26 @@ void Task::updateHook()
             if(locomotionMode == 1)
                 state = LC2WWC;
         }
-        if((locomotionMode == 0) && (state != LC))
+    }
+    else if ((joystick_motion_command.translation == 0) && (joystick_motion_command.rotation == 0))
+    {
+        if ((state != LC) && (state != WWC2LC))
         {
             state = WWC2LC;
             _kill_switch.write(true);
             std::cout<<"SWITCHER: sent true killSwitch " << std::endl;
         }
-        if((locomotionMode == 1) && (state != WWC) && (joystick_motion_command.translation != 0))
+    }
+    else
+    {
+        _locomotionMode.read(locomotionMode);
+        if((locomotionMode == 0) && (state != LC) && (state != WWC2LC))
+        {
+            state = WWC2LC;
+            _kill_switch.write(true);
+            std::cout<<"SWITCHER: sent true killSwitch " << std::endl;
+        }
+        if((locomotionMode == 1) && (state != WWC) && (state != LC2WWC) && (joystick_motion_command.translation != 0))
         {
             state = LC2WWC;
             _kill_switch.write(false);
@@ -197,11 +209,13 @@ void Task::updateHook()
         {
             //std::cout<<"SWITCHER: sending command to LC to turn " << std::endl;
             _lc_motion_command.write(joystick_motion_command);
+            _lc_commands.read(lc_commands);
             _joints_commands.write(lc_commands);
         }
         else
         {
              //std::cout<<"SWITCHER: output ww commands" << std::endl;
+             _ww_commands.read(ww_commands);
              _joints_commands.write(ww_commands);
         }
 
