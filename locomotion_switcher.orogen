@@ -50,6 +50,7 @@ task_context "Task" do
     output_port "ww_readings",            "base/commands/Joints"
     output_port "ww_joystick_command",    "controldev/RawCommand"
     output_port "kill_switch",            "bool"
+    output_port "resetDepJoints",         "bool"
 
     # To locomotion_control
     output_port "lc_readings",            "base/commands/Joints"
@@ -59,6 +60,6 @@ task_context "Task" do
     output_port "walking_command_rear",   "double"
 
     #port_driven "joints_readings", "joystick_command", "joystick_motion_command"
-    port_driven
-    #periodic 0.01
+    #port_driven
+    periodic 0.01
 end

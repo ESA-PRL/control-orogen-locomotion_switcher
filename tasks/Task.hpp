@@ -11,7 +11,7 @@
 
 namespace locomotion_switcher {
 
-    enum SwitcherState {INITIAL, LC, WWC, ALIGNING, LC2WWC, WWC2LC};
+    enum SwitcherState {INITIAL, LC, WWC, ALIGNING, LC2WWC, WWC2LC, STOP};
 
     class Task : public TaskBase
     {
@@ -45,6 +45,9 @@ namespace locomotion_switcher {
 
 	    bool isZeroSteering();
 	    bool isZeroWalking();
+      bool isZeroSpeeds();
+      bool kill_switch;
+      bool resetDepJoints;
 
 	    base::commands::Joints rectifySteering();
 	    base::commands::Joints rectifyWalking();
@@ -59,4 +62,3 @@ namespace locomotion_switcher {
 }
 
 #endif
-
