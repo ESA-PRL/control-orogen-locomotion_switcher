@@ -123,17 +123,18 @@ void Task::updateHook()
     {
         if(state == WWC)
         {
+            if(resetDepJoints)
+                _resetDepJoints.write(resetDepJoints = false);
             if(isZeroWalking())
             {
-                if(!resetDepJoints) _resetDepJoints.write(resetDepJoints = true);
+                //if(!resetDepJoints) _resetDepJoints.write(resetDepJoints = true);
                 if(kill_switch) _kill_switch.write(kill_switch = false);
                 _ww_commands.read(ww_commands);
                 _joints_commands.write(ww_commands);
             }
             else
             {
-                if(resetDepJoints)
-                    _resetDepJoints.write(resetDepJoints = false);
+
                 _ww_commands.read(ww_commands);
                 _joints_commands.write(ww_commands);
             }
@@ -146,8 +147,10 @@ void Task::updateHook()
                 if(!kill_switch) _kill_switch.write(kill_switch = true);
                 if(state == LC)
                 {
-                    _lc_commands.read(lc_commands);
-                    _joints_commands.write(lc_commands);
+                    if(isZeroSpeeds())
+                        _lc_motion_command.write(joystick_motion_command);
+                    if(_lc_commands.read(lc_commands) == RTT::NewData)
+                        _joints_commands.write(lc_commands);
                 }
                 else
                 {
@@ -160,8 +163,8 @@ void Task::updateHook()
                             else
                             {
                                 _lc_motion_command.write(joystick_motion_command);
-                                _lc_commands.read(lc_commands);
-                                _joints_commands.write(lc_commands);
+                                if(_lc_commands.read(lc_commands) == RTT::NewData)
+                                    _joints_commands.write(lc_commands);
                             }
                         }
                         else
@@ -182,7 +185,7 @@ void Task::updateHook()
                     _resetDepJoints.write(resetDepJoints = true);
                 if(kill_switch)
                     _kill_switch.write(kill_switch = false);
-                if (_ww_commands.read(ww_commands) == RTT::NewData)
+                if(_ww_commands.read(ww_commands) == RTT::NewData)
                     _joints_commands.write(ww_commands);
             }
         }
@@ -345,7 +348,7 @@ bool Task::isZeroWalking()
 bool Task::isZeroSpeeds()
 {
     _motors_readings.read(motors_readings);
-    for (unsigned int i = 10; i < 16; i++)
+    for (unsigned int i = 0; i < 16; i++)
 	    if (fabs(motors_readings[i].speed) > window)
 	        return false;
     return true;
