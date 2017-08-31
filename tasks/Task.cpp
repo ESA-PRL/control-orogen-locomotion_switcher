@@ -7,14 +7,14 @@ Task::Task(std::string const& name)
     : TaskBase(name)
 {
     state = INITIAL;
-    isModeOverrideEnabled = false;
+    isModeOverrideEnabled = true;
 }
 
 Task::Task(std::string const& name, RTT::ExecutionEngine* engine)
     : TaskBase(name, engine)
 {
     state = INITIAL;
-    isModeOverrideEnabled = false;
+    isModeOverrideEnabled = true;
 }
 
 
@@ -56,6 +56,7 @@ void Task::updateHook()
 {
     TaskBase::updateHook();
 
+    int locomotionModeOverride;
     if (
             (_motion_command.read(motion_command) == RTT::NewData)||                             // new motion command or
             (!isModeOverrideEnabled && (_locomotionMode.read(locomotionMode) == RTT::NewData))|| // new mode while autonomous or
