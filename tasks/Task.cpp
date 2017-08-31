@@ -6,13 +6,15 @@ using namespace locomotion_switcher;
 Task::Task(std::string const& name)
     : TaskBase(name)
 {
-	state = INITIAL;
+    state = INITIAL;
+    isModeOverrideEnabled = false;
 }
 
 Task::Task(std::string const& name, RTT::ExecutionEngine* engine)
     : TaskBase(name, engine)
 {
-	state = INITIAL;
+    state = INITIAL;
+    isModeOverrideEnabled = false;
 }
 
 
@@ -54,8 +56,22 @@ void Task::updateHook()
 {
     TaskBase::updateHook();
 
-    if ((_motion_command.read(motion_command) == RTT::NewData)||(_locomotionMode.read(locomotionMode)== RTT::NewData))
+    if (
+            (_motion_command.read(motion_command) == RTT::NewData)||                             // new motion command or
+            (!isModeOverrideEnabled && (_locomotionMode.read(locomotionMode) == RTT::NewData))|| // new mode while autonomous or
+            (_locomotionMode_override.read(locomotionModeOverride) == RTT::NewData)              // new override input
+        )
     {
+        if (locomotionModeOverride == -1)
+        {
+            isModeOverrideEnabled = false;
+        }
+        else
+        {
+            locomotionMode = locomotionModeOverride;
+            isModeOverrideEnabled = true;
+        }
+
         //std::cout<<"SWITCHER: new command received: " << motion_command.translation << " " << motion_command.rotation << std::endl;
         _lc_motion_command.write(motion_command);
         if ((motion_command.translation == 0) && (motion_command.rotation == 0))
