@@ -3,11 +3,8 @@ name "locomotion_switcher"
 
 import_types_from "locomotion_switcherTypes.hpp"
 import_types_from "base"
-import_types_from "controldev"
-
 
 ##_TASK_##
-
 task_context "Task" do
     needs_configuration
 
@@ -19,7 +16,7 @@ task_context "Task" do
     input_port "locomotionMode",          "int"
 
     # From command arbiter (to overwrite mode with joystick-selected mode)
-    input_port "locomotionMode_overwrite","int"
+    input_port "locomotionMode_override", "int"
 
     # From waypoint_navigation
     input_port "current_segment",         "int"

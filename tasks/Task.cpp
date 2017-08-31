@@ -1,13 +1,8 @@
-/* Generated from orogen/lib/orogen/templates/tasks/Task.cpp */
-
 #include "Task.hpp"
-
 
 using namespace locomotion_switcher;
 
-
 //__CONSTRUCTORS
-
 Task::Task(std::string const& name)
     : TaskBase(name)
 {
@@ -22,14 +17,12 @@ Task::Task(std::string const& name, RTT::ExecutionEngine* engine)
 
 
 //__DECONSTRUCTOR
-
 Task::~Task()
 {
 }
 
 
 //__CONFIGURE
-
 bool Task::configureHook()
 {
     if (! TaskBase::configureHook())
@@ -39,7 +32,6 @@ bool Task::configureHook()
 
 
 //__START
-
 bool Task::startHook()
 {
     if (! TaskBase::startHook())
@@ -58,7 +50,6 @@ bool Task::startHook()
 
 
 //__UPDATE
-
 void Task::updateHook()
 {
     TaskBase::updateHook();
@@ -116,7 +107,6 @@ void Task::updateHook()
             }
             else
             {
-
                 _ww_joints_commands.read(ww_joints_commands);
                 _joints_commands.write(ww_joints_commands);
             }
@@ -141,7 +131,9 @@ void Task::updateHook()
                         if(state == STOP)
                         {
                             if(isZeroSpeeds())
+                            {
                                 state = INITIAL;
+                            }
                             else
                             {
                                 motion_command.translation = 0.0;
@@ -182,7 +174,6 @@ void Task::updateHook()
 
 
 //__CHECK_IF_STEERING_JOINT_POSITIONS_ARE_ZERO
-
 bool Task::isZeroSteering()
 {
     _motors_readings.read(motors_readings);
@@ -197,7 +188,6 @@ bool Task::isZeroSteering()
 
 
 //__CHECK_IF_WALKING_JOINT_POSITIONS_ARE_ZERO
-
 bool Task::isZeroWalking()
 {
     _motors_readings.read(motors_readings);
@@ -218,7 +208,6 @@ bool Task::isZeroSpeeds()
 	        return false;
     return true;
 }
-
 
 
 base::commands::Joints Task::rectifySteering()
