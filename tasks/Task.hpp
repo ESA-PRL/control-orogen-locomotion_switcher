@@ -22,18 +22,12 @@ namespace locomotion_switcher {
 	    SwitcherState state;
 	    std::vector<int> last_button_values;
 	    std::vector<double> last_axes_values;
-	    base::commands::Joints ww_commands;
-	    base::commands::Joints lc_commands;
-	    base::commands::Joints joints_commands;
-          // These are the readings from all active+passive joints
-	    base::commands::Joints joints_readings;
-          // These are the readings from the motors (active joints)
+	    base::commands::Joints ww_joints_commands;
+	    base::commands::Joints lc_joints_commands;
             base::commands::Joints motors_readings;
-            base::commands::Motion2D joystick_motion_command;
-	    base::samples::Joints bema_joints;
+            base::commands::Motion2D motion_command;
+
             std::vector<base::Waypoint> trajectory;
-	    int current_locomotion_mode;
-	    int new_locomotion_mode;
             int locomotionMode;
         public:
             Task(std::string const& name = "locomotion_switcher::Task");
@@ -50,10 +44,6 @@ namespace locomotion_switcher {
       bool resetDepJoints;
 
 	    base::commands::Joints rectifySteering();
-	    base::commands::Joints rectifyWalking();
-            void initWW(const controldev::RawCommand joystick_command);
-
-            void evaluateJoystickCommands(const controldev::RawCommand joystick_commands);
 
             void errorHook();
             void stopHook();

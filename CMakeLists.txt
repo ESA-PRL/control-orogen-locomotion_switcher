@@ -1,7 +1,7 @@
 PROJECT(locomotion_switcher)
 cmake_minimum_required(VERSION 2.6)
 
-SET (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/.orogen/config")
+SET (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/.orogen/config")
 INCLUDE(locomotion_switcherBase)
 
 # FIND_PACKAGE(KDL)

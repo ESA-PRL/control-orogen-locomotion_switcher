@@ -16,17 +16,18 @@ task_context "Task" do
   ## INPUTS ##
 
     # From path_planning
-    input_port "locomotionVector",        "/std/vector<int16_t>"
-    input_port "locomotionMode",        "int"
+    input_port "locomotionMode",          "int"
+
+    # From command arbiter (to overwrite mode with joystick-selected mode)
+    input_port "locomotionMode_overwrite","int"
 
     # From waypoint_navigation
     input_port "current_segment",         "int"
     input_port "currentWaypoint",         "base/Waypoint"
     input_port "trajectory",              "/std/vector</base/Waypoint>"
 
-    # From Joystick
-    input_port "joystick_command",        "controldev/RawCommand"
-    input_port "joystick_motion_command", "base/commands/Motion2D"
+    # From Joystick or Waypoint Navigation
+    input_port "motion_command",          "base/commands/Motion2D"
 
     # From Reconfigurable Rover
     input_port "joints_readings",         "base/samples/Joints"
@@ -34,12 +35,11 @@ task_context "Task" do
     input_port "pose",                    "base/samples/RigidBodyState"
 
     # From wheelwalking_control
-    input_port "ww_commands",             "base/commands/Joints"
+    input_port "ww_joints_commands",      "base/commands/Joints"
 
     # From locomotion_control
-    input_port "lc_commands",             "base/commands/Joints"
+    input_port "lc_joints_commands",      "base/commands/Joints"
     input_port "bema_joints",             "base/samples/Joints"
-    
 
   ## OUTPUTS ##
 
@@ -48,7 +48,6 @@ task_context "Task" do
 
     # To wheelwalking_control
     output_port "ww_readings",            "base/commands/Joints"
-    output_port "ww_joystick_command",    "controldev/RawCommand"
     output_port "kill_switch",            "bool"
     output_port "resetDepJoints",         "bool"
 
@@ -59,7 +58,8 @@ task_context "Task" do
     output_port "walking_command_front",  "double"
     output_port "walking_command_rear",   "double"
 
-    #port_driven "joints_readings", "joystick_command", "joystick_motion_command"
-    #port_driven
-    periodic 0.01
+    runtime_states :NO_LOCOMOTION, :LOCOMOTION_CONTROL, :WW_CONTROL
+
+    port_driven
+    #periodic 0.01
 end
