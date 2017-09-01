@@ -26,19 +26,10 @@ bool Task::configureHook()
     if (! TaskBase::configureHook())
         return false;
     isModeOverrideEnabled = true;
+    locomotionModeOverride = 0;
     state = INITIAL;
-    return true;
-}
-
-
-//__START
-bool Task::startHook()
-{
-    if (! TaskBase::startHook())
-        return false;
-    state = INITIAL;
+    stopRover = true;
     window = 0.01;
-    first_iteration = true;
     std::cout<<"SWITCHER: INITIAL state" <<std::endl;
     motion_command.translation = 0.0;
     motion_command.rotation = 0.0;
@@ -49,18 +40,27 @@ bool Task::startHook()
 }
 
 
+//__START
+bool Task::startHook()
+{
+    if (! TaskBase::startHook())
+        return false;
+    return true;
+}
+
+
 //__UPDATE
 void Task::updateHook()
 {
     TaskBase::updateHook();
 
-    int locomotionModeOverride;
     if (
             (!isModeOverrideEnabled && (_locomotionMode.read(locomotionMode) == RTT::NewData))|| // new mode while autonomous or
-            (_locomotionMode_override.read(locomotionModeOverride) == RTT::NewData)||              // new override input
-            (_motion_command.read(motion_command) == RTT::NewData)                             // new motion command or
+            (_locomotionMode_override.read(locomotionModeOverride) == RTT::NewData)||            // new override input or
+            (_motion_command.read(motion_command) == RTT::NewData)                               // new motion command
         )
     {
+        // do we need to override the path planner's locomotion mode?
         if (locomotionModeOverride == -1)
         {
             isModeOverrideEnabled = false;
@@ -69,133 +69,97 @@ void Task::updateHook()
         {
             locomotionMode = locomotionModeOverride;
             isModeOverrideEnabled = true;
-            std::cout << "locomotion mode: " << locomotionMode << std::endl;
         }
 
-        //std::cout<<"SWITCHER: new command received: " << motion_command.translation << " " << motion_command.rotation << std::endl;
-        //_lc_motion_command.write(motion_command);
+        // stop command
         if ((motion_command.translation == 0) && (motion_command.rotation == 0))
         {
-            if (state != INITIAL)
-            {
-                state = STOP;
-                std::cout<<"SWITCHER: stopping rover " << std::endl;
-            }
+            // we need to stop the wheel walking component using the kill switch port.
+            // the locomotion component (driving and turning) handles (0,0) commands by itself.
+            std::cout<<"SWITCHER: stopping rover " << std::endl;
+            stopRover = true;
         }
+        // rotation command
         else if ((motion_command.translation == 0) && (motion_command.rotation != 0))
         {
-            if ((state != LC) && (state != WWC2LC))
-            {
-                state = WWC2LC;
-                std::cout<<"SWITCHER: to LC to do spot turn" << std::endl;
-            }
+            state = LC;
+            std::cout<<"SWITCHER: do spot turn" << std::endl;
+            stopRover = false;
         }
+        // translation (and rotation) command
         else
         {
-            if((locomotionMode == 0) && (state != LC) && (state != WWC2LC))
+            if((locomotionMode == 0) && (state != LC))
             {
-                state = WWC2LC;
+                state = LC;
                 std::cout<<"SWITCHER: changing to Locomotion Control" << std::endl;
             }
-            if((locomotionMode == 1) && (state != WWC) && (state != LC2WWC))
+            if((locomotionMode == 1) && (state != WWC))
             {
-                state = LC2WWC;
+                state = WWC;
                 std::cout<<"SWITCHER: changing to Wheel-walking Control " << std::endl;
             }
+            stopRover = false;
         }
     }
 
-    if (state == INITIAL)
+    if(state == WWC)
     {
-    }
-    else
-    {
-        if(state == WWC)
+        if(resetDepJoints)
+            _resetDepJoints.write(resetDepJoints = false);
+
+        if (stopRover)
         {
-            _resetDepJoints.write(resetDepJoints = false); //TODO consider removing, it's already in ELSE below
-
+            if(!kill_switch)
+            {
+                _kill_switch.write(kill_switch = true);
+            }
+            // writing the kill switch does not take effect immidiately
+            _ww_joints_commands.read(ww_joints_commands);
+            _joints_commands.write(ww_joints_commands);
+        }
+        else if(!isZeroSteering())
+        {
             // make sure that the wheels are straight before using wheel walking
-            if(!isZeroSteering())
-            {
-                std::cout << "zeroing steering motors " << locomotionMode << std::endl;
-                _joints_commands.write(rectifySteering());
-            }
-            else
-            {
-                if(kill_switch)
-                    _kill_switch.write(kill_switch = false);
-
-                std::cout << "trying to move " << locomotionMode << std::endl;
-                _ww_joints_commands.read(ww_joints_commands);
-                _joints_commands.write(ww_joints_commands);
-            }
+            _joints_commands.write(rectifySteering());
         }
         else
         {
-            if(!kill_switch)
-                _kill_switch.write(kill_switch = true); //TODO consider removing
-
-            if(!isZeroWalking())
+            if(kill_switch)
             {
-                if(!resetDepJoints)
-                    _resetDepJoints.write(resetDepJoints = true);
-                if(_ww_joints_commands.read(ww_joints_commands) == RTT::NewData)
-                    _joints_commands.write(ww_joints_commands);
+                _kill_switch.write(kill_switch = false);
             }
-            else
-            {
-                if(resetDepJoints)
-                    _resetDepJoints.write(resetDepJoints = false); //TODO consider removing
-                if(state == LC)
-                {
-                    //if(isZeroSpeeds()) //TODO really necessary?
-                        _lc_motion_command.write(motion_command);
-                    if(_lc_joints_commands.read(lc_joints_commands) == RTT::NewData)
-                        _joints_commands.write(lc_joints_commands);
-                }
-                else
-                {
-                    //if(isZeroSteering())
-                    //{
-                        if(state == STOP)
-                        {
-                            if(isZeroSpeeds())
-                            {
-                                state = INITIAL;
-                            }
-                            else
-                            {
-                                motion_command.translation = 0.0;
-                                motion_command.rotation = 0.0;
-                                _lc_motion_command.write(motion_command);
-                                if(_lc_joints_commands.read(lc_joints_commands) == RTT::NewData)
-                                    _joints_commands.write(lc_joints_commands);
-                            }
-                        }
-                        else
-                        {
-                            if(state == WWC2LC)
-                                state = LC;
-                            if(state == LC2WWC)
-                                state = WWC;
-                        }
-                    //}
-                    //else
-                        //_joints_commands.write(rectifySteering()); //TODO move to (if state==WWC)
-                }
-            }
+            _ww_joints_commands.read(ww_joints_commands);
+            _joints_commands.write(ww_joints_commands);
+        }
+    }
+    else if (state == LC)
+    {
+        if(!isZeroWalking())
+        {
+            if (!kill_switch)
+                _kill_switch.write(kill_switch = true);
+            if(!resetDepJoints)
+                _resetDepJoints.write(resetDepJoints = true);
+            if(_ww_joints_commands.read(ww_joints_commands) == RTT::NewData)
+                _joints_commands.write(ww_joints_commands);
+        }
+        else
+        {
+            _lc_motion_command.write(motion_command);
+            if(_lc_joints_commands.read(lc_joints_commands) == RTT::NewData)
+                _joints_commands.write(lc_joints_commands);
         }
     }
 }
-
 
 //__CHECK_ IF_STEERING_JOINT_POSITIONS_ARE_ZERO
 bool Task::isZeroSteering()
 {
     _motors_readings.read(motors_readings);
     for (unsigned int i = 6; i < 10; i++)
-	    if ((fabs(motors_readings[i].position) > 2*window)||(fabs(motors_readings[i].speed) > window))
-		return false;
+        if ((fabs(motors_readings[i].position) > 2*window)||(fabs(motors_readings[i].speed) > window))
+            return false;
     return true;
 }
 
@@ -205,8 +169,8 @@ bool Task::isZeroWalking()
 {
     _motors_readings.read(motors_readings);
     for (unsigned int i = 10; i < 16; i++)
-	if ((fabs(motors_readings[i].position) > 2*window)||(fabs(motors_readings[i].speed) > window))
-	    return false;
+        if ((fabs(motors_readings[i].position) > 2*window)||(fabs(motors_readings[i].speed) > window))
+            return false;
     return true;
 }
 
@@ -214,8 +178,8 @@ bool Task::isZeroSpeeds()
 {
     _motors_readings.read(motors_readings);
     for (unsigned int i = 0; i < 16; i++)
-	    if (fabs(motors_readings[i].speed) > window)
-	        return false;
+        if (fabs(motors_readings[i].speed) > window)
+            return false;
     return true;
 }
 
