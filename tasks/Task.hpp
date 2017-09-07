@@ -22,14 +22,14 @@ namespace locomotion_switcher {
             base::commands::Joints motors_readings;
             base::commands::Motion2D motion_command;
 
-            int locomotionMode;
+            LocomotionMode locomotionMode;
 
             bool stopRover;
             bool kill_switch;
             bool resetDepJoints;
 
             bool isModeOverrideEnabled;
-            int locomotionModeOverride;
+            LocomotionMode locomotionModeOverride;
         public:
             Task(std::string const& name = "locomotion_switcher::Task");
             Task(std::string const& name, RTT::ExecutionEngine* engine);

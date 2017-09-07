@@ -13,10 +13,10 @@ task_context "Task" do
   ## INPUTS ##
 
     # From path_planning
-    input_port "locomotionMode",          "int"
+    input_port "locomotionMode",          "locomotion_switcher/LocomotionMode"
 
     # From command arbiter (to overwrite mode with joystick-selected mode)
-    input_port "locomotionMode_override", "int"
+    input_port "locomotionMode_override", "locomotion_switcher/LocomotionMode"
 
     # From waypoint_navigation
     input_port "current_segment",         "int"

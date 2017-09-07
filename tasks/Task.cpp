@@ -26,7 +26,7 @@ bool Task::configureHook()
     if (! TaskBase::configureHook())
         return false;
     isModeOverrideEnabled = true;
-    locomotionModeOverride = 0;
+    locomotionModeOverride = LocomotionMode::DRIVING;
     state = INITIAL;
     stopRover = true;
     window = 0.01;
@@ -35,7 +35,7 @@ bool Task::configureHook()
     motion_command.rotation = 0.0;
     kill_switch = true;
     resetDepJoints = false;
-    locomotionMode = 0;
+    locomotionMode = LocomotionMode::DRIVING;
     return true;
 }
 
@@ -61,7 +61,7 @@ void Task::updateHook()
         )
     {
         // do we need to override the path planner's locomotion mode?
-        if (locomotionModeOverride == -1)
+        if (locomotionModeOverride == LocomotionMode::DONT_CARE)
         {
             isModeOverrideEnabled = false;
         }
@@ -89,12 +89,12 @@ void Task::updateHook()
         // translation (and rotation) command
         else
         {
-            if((locomotionMode == 0) && (state != LC))
+            if((locomotionMode == LocomotionMode::DRIVING) && (state != LC))
             {
                 state = LC;
                 std::cout<<"SWITCHER: changing to Locomotion Control" << std::endl;
             }
-            if((locomotionMode == 1) && (state != WWC))
+            if((locomotionMode == LocomotionMode::WHEEL_WALKING) && (state != WWC))
             {
                 state = WWC;
                 std::cout<<"SWITCHER: changing to Wheel-walking Control " << std::endl;
