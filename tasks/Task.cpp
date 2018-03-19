@@ -55,11 +55,12 @@ void Task::updateHook()
     TaskBase::updateHook();
 
     if (
-            (!isModeOverrideEnabled && (_locomotionMode.read(locomotionMode) == RTT::NewData))|| // new mode while autonomous or
-            (_locomotionMode_override.read(locomotionModeOverride) == RTT::NewData)||            // new override input or
+            (!isModeOverrideEnabled && (_locomotion_mode.read(locomotionMode) == RTT::NewData))|| // new mode while autonomous or
+            (_locomotion_mode_override.read(locomotionModeOverride) == RTT::NewData)||            // new override input or
             (_motion_command.read(motion_command) == RTT::NewData)                               // new motion command
         )
     {
+
         // do we need to override the path planner's locomotion mode?
         if (locomotionModeOverride == LocomotionMode::DONT_CARE)
         {
@@ -106,7 +107,7 @@ void Task::updateHook()
     if(state == WWC)
     {
         if(resetDepJoints)
-            _resetDepJoints.write(resetDepJoints = false);
+            _reset_dep_joints.write(resetDepJoints = false);
 
         if (stopRover)
         {
@@ -140,7 +141,7 @@ void Task::updateHook()
             if (!kill_switch)
                 _kill_switch.write(kill_switch = true);
             if(!resetDepJoints)
-                _resetDepJoints.write(resetDepJoints = true);
+                _reset_dep_joints.write(resetDepJoints = true);
             if(_ww_joints_commands.read(ww_joints_commands) == RTT::NewData)
                 _joints_commands.write(ww_joints_commands);
         }
