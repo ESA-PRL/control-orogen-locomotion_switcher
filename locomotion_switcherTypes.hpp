@@ -9,7 +9,8 @@ namespace locomotion_switcher
         DRIVING=0,
         WHEEL_WALKING=1,
         CRABBING=2,
-        NUM_MODES=3
+        DEPLOYMENT=3,
+        NUM_MODES=4
     };
 }
 

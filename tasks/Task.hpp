@@ -9,7 +9,7 @@
 
 namespace locomotion_switcher {
 
-    enum SwitcherState {INITIAL, LC, WWC};
+    enum SwitcherState {INITIAL, LC, WWC, DC};
 
     class Task : public TaskBase
     {

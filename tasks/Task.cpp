@@ -54,11 +54,15 @@ void Task::updateHook()
 {
     TaskBase::updateHook();
 
+    bool new_command = false;
+    if (_motion_command.read(motion_command) == RTT::NewData)
+        new_command = true;
+
     if (
             (!isModeOverrideEnabled && (_locomotion_mode.read(locomotionMode) == RTT::NewData))|| // new mode while autonomous or
             (_locomotion_mode_override.read(locomotionModeOverride) == RTT::NewData)||            // new override input or
-            (_motion_command.read(motion_command) == RTT::NewData)                               // new motion command
-        )
+            (new_command)                               // new motion command
+       )
     {
 
         // do we need to override the path planner's locomotion mode?
@@ -95,10 +99,15 @@ void Task::updateHook()
                 state = LC;
                 std::cout<<"SWITCHER: changing to Locomotion Control" << std::endl;
             }
-            if((locomotionMode == LocomotionMode::WHEEL_WALKING) && (state != WWC))
+            else if((locomotionMode == LocomotionMode::WHEEL_WALKING) && (state != WWC))
             {
                 state = WWC;
                 std::cout<<"SWITCHER: changing to Wheel-walking Control " << std::endl;
+            }
+            else if((locomotionMode == LocomotionMode::DEPLOYMENT) && (state != DC))
+            {
+                state = DC;
+                std::cout<<"SWITCHER: changing to Deployment Control " << std::endl;
             }
             stopRover = false;
         }
@@ -147,10 +156,28 @@ void Task::updateHook()
         }
         else
         {
-            _lc_motion_command.write(motion_command);
+            if (new_command)
+                _lc_motion_command.write(motion_command);
             if(_lc_joints_commands.read(lc_joints_commands) == RTT::NewData)
                 _joints_commands.write(lc_joints_commands);
         }
+    }
+    else if (state == DC)
+    {
+        //if(!isZeroSteering())
+        //{
+        //    // make sure that the wheels are straight before using wheel walking
+        //    _joints_commands.write(rectifySteering());
+        //}
+        if (new_command)
+        {
+            if (stopRover)
+                _lc_motion_command.write(motion_command);
+            else
+                _bema_command.write(motion_command.translation);
+        }
+        if(_lc_joints_commands.read(lc_joints_commands) == RTT::NewData)
+            _joints_commands.write(lc_joints_commands);
     }
 }
 
