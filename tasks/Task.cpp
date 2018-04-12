@@ -25,7 +25,7 @@ bool Task::configureHook()
 {
     if (! TaskBase::configureHook())
         return false;
-    isModeOverrideEnabled = true;
+    isModeOverrideEnabled = false;
     locomotionModeOverride = LocomotionMode::DRIVING;
     state = INITIAL;
     stopRover = true;
@@ -54,18 +54,10 @@ void Task::updateHook()
 {
     TaskBase::updateHook();
 
-    bool new_command = false;
-    if (_motion_command.read(motion_command) == RTT::NewData)
-        new_command = true;
-
-    if (
-            (!isModeOverrideEnabled && (_locomotion_mode.read(locomotionMode) == RTT::NewData))|| // new mode while autonomous or
-            (_locomotion_mode_override.read(locomotionModeOverride) == RTT::NewData)||            // new override input or
-            (new_command)                               // new motion command
-       )
+    bool new_mode = false;
+    if (_locomotion_mode_override.read(locomotionModeOverride) == RTT::NewData)            // new override input
     {
-
-        // do we need to override the path planner's locomotion mode?
+         // do we need to override the path planner's locomotion mode?
         if (locomotionModeOverride == LocomotionMode::DONT_CARE)
         {
             isModeOverrideEnabled = false;
@@ -73,9 +65,41 @@ void Task::updateHook()
         else
         {
             locomotionMode = locomotionModeOverride;
+            new_mode = true;
             isModeOverrideEnabled = true;
         }
+    }
+    if (!isModeOverrideEnabled)
+    {
+        if (_locomotion_mode.read(locomotionMode) == RTT::NewData) // new mode while autonomous
+            new_mode = true;
+    }
 
+    if (new_mode)
+    {
+        if((locomotionMode == LocomotionMode::DRIVING) && (state != LC))
+        {
+            state = LC;
+            std::cout<<"SWITCHER: changing to Locomotion Control" << std::endl;
+        }
+        else if((locomotionMode == LocomotionMode::WHEEL_WALKING) && (state != WWC))
+        {
+            state = WWC;
+            std::cout<<"SWITCHER: changing to Wheel-walking Control " << std::endl;
+        }
+        else if((locomotionMode == LocomotionMode::DEPLOYMENT) && (state != DC))
+        {
+            state = DC;
+            std::cout<<"SWITCHER: changing to Deployment Control " << std::endl;
+        }
+    }
+
+    bool new_command = false;
+    if (_motion_command.read(motion_command) == RTT::NewData)
+        new_command = true;
+
+    if (new_command)
+    {
         // stop command
         if ((motion_command.translation == 0) && (motion_command.rotation == 0))
         {
@@ -94,21 +118,6 @@ void Task::updateHook()
         // translation (and rotation) command
         else
         {
-            if((locomotionMode == LocomotionMode::DRIVING) && (state != LC))
-            {
-                state = LC;
-                std::cout<<"SWITCHER: changing to Locomotion Control" << std::endl;
-            }
-            else if((locomotionMode == LocomotionMode::WHEEL_WALKING) && (state != WWC))
-            {
-                state = WWC;
-                std::cout<<"SWITCHER: changing to Wheel-walking Control " << std::endl;
-            }
-            else if((locomotionMode == LocomotionMode::DEPLOYMENT) && (state != DC))
-            {
-                state = DC;
-                std::cout<<"SWITCHER: changing to Deployment Control " << std::endl;
-            }
             stopRover = false;
         }
     }
@@ -145,7 +154,7 @@ void Task::updateHook()
     }
     else if (state == LC)
     {
-        if(!isZeroWalking())
+        while(!isZeroWalking())
         {
             if (!kill_switch)
                 _kill_switch.write(kill_switch = true);
@@ -153,14 +162,17 @@ void Task::updateHook()
                 _reset_dep_joints.write(resetDepJoints = true);
             if(_ww_joints_commands.read(ww_joints_commands) == RTT::NewData)
                 _joints_commands.write(ww_joints_commands);
+            if (!new_command)
+            {
+                new_command=true;
+                motion_command.translation=0.0;
+                motion_command.rotation=0.0;
+            }
         }
-        else
-        {
-            if (new_command)
-                _lc_motion_command.write(motion_command);
-            if(_lc_joints_commands.read(lc_joints_commands) == RTT::NewData)
-                _joints_commands.write(lc_joints_commands);
-        }
+        if (new_command)
+            _lc_motion_command.write(motion_command);
+        if(_lc_joints_commands.read(lc_joints_commands) == RTT::NewData)
+            _joints_commands.write(lc_joints_commands);
     }
     else if (state == DC)
     {
@@ -169,6 +181,7 @@ void Task::updateHook()
         //    // make sure that the wheels are straight before using wheel walking
         //    _joints_commands.write(rectifySteering());
         //}
+        resetDepJoints = false;
         if (new_command)
         {
             if (stopRover)
@@ -197,7 +210,7 @@ bool Task::isZeroWalking()
 {
     _motors_readings.read(motors_readings);
     for (unsigned int i = 10; i < 16; i++)
-        if ((fabs(motors_readings[i].position) > 2*window)||(fabs(motors_readings[i].speed) > window))
+        if ( (fabs(motors_readings[i].position) > 2*window) || (fabs(motors_readings[i].speed) > window) )
             return false;
     return true;
 }

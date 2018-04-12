@@ -1,0 +1,7 @@
+---
+- time: 20180323-1638
+  cmdline: "/home/marta/rock/gui/vizkit/bin/rock-display "
+  robot_name: default
+  robot_type: default
+  app_name: locomotion_switcher
+  app_dir: "/home/marta/rock/control/orogen/locomotion_switcher"
