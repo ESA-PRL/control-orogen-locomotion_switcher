@@ -2,7 +2,6 @@
 
 using namespace locomotion_switcher;
 
-//__CONSTRUCTORS
 Task::Task(std::string const& name)
     : TaskBase(name)
 {
@@ -13,14 +12,10 @@ Task::Task(std::string const& name, RTT::ExecutionEngine* engine)
 {
 }
 
-
-//__DECONSTRUCTOR
 Task::~Task()
 {
 }
 
-
-//__CONFIGURE
 bool Task::configureHook()
 {
     if (! TaskBase::configureHook())
@@ -30,7 +25,7 @@ bool Task::configureHook()
     state = INITIAL;
     stopRover = true;
     window = 0.01;
-    std::cout<<"SWITCHER: INITIAL state" <<std::endl;
+    LOG_DEBUG_S << "SWITCHER: INITIAL state";
     motion_command.translation = 0.0;
     motion_command.rotation = 0.0;
     kill_switch = true;
@@ -39,8 +34,6 @@ bool Task::configureHook()
     return true;
 }
 
-
-//__START
 bool Task::startHook()
 {
     if (! TaskBase::startHook())
@@ -48,14 +41,12 @@ bool Task::startHook()
     return true;
 }
 
-
-//__UPDATE
 void Task::updateHook()
 {
     TaskBase::updateHook();
 
     bool new_mode = false;
-    if (_locomotion_mode_override.read(locomotionModeOverride) == RTT::NewData)            // new override input
+    if (_locomotion_mode_override.read(locomotionModeOverride) == RTT::NewData)
     {
          // do we need to override the path planner's locomotion mode?
         if (locomotionModeOverride == LocomotionMode::DONT_CARE)
@@ -80,17 +71,17 @@ void Task::updateHook()
         if((locomotionMode == LocomotionMode::DRIVING) && (state != LC))
         {
             state = LC;
-            std::cout<<"SWITCHER: changing to Locomotion Control" << std::endl;
+            LOG_DEBUG_S << "Changing to Locomotion Control";
         }
         else if((locomotionMode == LocomotionMode::WHEEL_WALKING) && (state != WWC))
         {
             state = WWC;
-            std::cout<<"SWITCHER: changing to Wheel-walking Control " << std::endl;
+            LOG_DEBUG_S << "Changing to Wheel-walking Control";
         }
         else if((locomotionMode == LocomotionMode::DEPLOYMENT) && (state != DC))
         {
             state = DC;
-            std::cout<<"SWITCHER: changing to Deployment Control " << std::endl;
+            LOG_DEBUG_S << "Changing to Deployment Control";
         }
     }
 
@@ -105,14 +96,14 @@ void Task::updateHook()
         {
             // we need to stop the wheel walking component using the kill switch port.
             // the locomotion component (driving and turning) handles (0,0) commands by itself.
-            std::cout<<"SWITCHER: stopping rover " << std::endl;
+            LOG_DEBUG_S << "Stopping rover";
             stopRover = true;
         }
         // rotation command
         else if ((motion_command.translation == 0) && (motion_command.rotation != 0))
         {
             state = LC;
-            std::cout<<"SWITCHER: do spot turn" << std::endl;
+            LOG_DEBUG_S << "Do spot turn";
             stopRover = false;
         }
         // translation (and rotation) command
@@ -267,10 +258,9 @@ base::commands::Joints Task::rectifySteering()
     }
     for(uint i=16; i<19; i++)
     {
-	rJoints[i].speed = base::NaN<double>();
-	rJoints[i].position = base::NaN<double>();
+        rJoints[i].speed = base::NaN<double>();
+        rJoints[i].position = base::NaN<double>();
     }
-    //std::cout<<"SWITCHER: rectifying steering joints" <<std::endl;
     return rJoints;
 }
 

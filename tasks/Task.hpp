@@ -6,6 +6,10 @@
 #include <base/commands/Joints.hpp>
 #include <base/commands/Motion2D.hpp>
 #include <vector>
+#include <base-logging/Logging.hpp>
+
+#define BASE_LOG_NAMESPACE locomotion_switcher
+#define BASE_LOG_DISABLE
 
 namespace locomotion_switcher {
 

@@ -4,7 +4,7 @@ include(locomotion_switcherTaskLib)
 ADD_LIBRARY(${LOCOMOTION_SWITCHER_TASKLIB_NAME} SHARED 
     ${LOCOMOTION_SWITCHER_TASKLIB_SOURCES})
 add_dependencies(${LOCOMOTION_SWITCHER_TASKLIB_NAME}
-    regen-typekit)
+    regen-typekit base-lib)
 
 TARGET_LINK_LIBRARIES(${LOCOMOTION_SWITCHER_TASKLIB_NAME}
     ${OrocosRTT_LIBRARIES}
