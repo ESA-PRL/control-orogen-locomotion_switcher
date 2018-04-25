@@ -145,7 +145,8 @@ void Task::updateHook()
     }
     else if (state == LC)
     {
-        while(!isZeroWalking())
+        // only rectify deployment motors when coming from different locomotion mode
+        while(!isZeroWalking() && new_mode)
         {
             if (!kill_switch)
                 _kill_switch.write(kill_switch = true);
