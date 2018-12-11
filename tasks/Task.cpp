@@ -25,7 +25,7 @@ bool Task::configureHook()
     state = INITIAL;
     stopRover = true;
     window = 0.01;
-    LOG_DEBUG_S << "SWITCHER: INITIAL state";
+    LOG_DEBUG_S << "Initial state";
     motion_command.translation = 0.0;
     motion_command.rotation = 0.0;
     kill_switch = true;

@@ -8,9 +8,6 @@
 #include <vector>
 #include <base-logging/Logging.hpp>
 
-#define BASE_LOG_NAMESPACE locomotion_switcher
-#define BASE_LOG_DISABLE
-
 namespace locomotion_switcher {
 
     enum SwitcherState {INITIAL, LC, WWC, DC};
