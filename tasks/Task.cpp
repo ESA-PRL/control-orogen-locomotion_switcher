@@ -190,7 +190,7 @@ void Task::updateHook()
 bool Task::isZeroSteering()
 {
     _motors_readings.read(motors_readings);
-    for (unsigned int i = 6; i < 10; i++)
+    for (unsigned int i = 6; i < 12; i++)
         if ((fabs(motors_readings[i].position) > 2*window)||(fabs(motors_readings[i].speed) > window))
             return false;
     return true;
@@ -201,7 +201,7 @@ bool Task::isZeroSteering()
 bool Task::isZeroWalking()
 {
     _motors_readings.read(motors_readings);
-    for (unsigned int i = 10; i < 16; i++)
+    for (unsigned int i = 12; i < 18; i++)
         if ( (fabs(motors_readings[i].position) > 2*window) || (fabs(motors_readings[i].speed) > window) )
             return false;
     return true;
@@ -210,7 +210,7 @@ bool Task::isZeroWalking()
 bool Task::isZeroSpeeds()
 {
     _motors_readings.read(motors_readings);
-    for (unsigned int i = 0; i < 16; i++)
+    for (unsigned int i = 0; i < 18; i++)
         if (fabs(motors_readings[i].speed) > window)
             return false;
     return true;
@@ -220,7 +220,7 @@ bool Task::isZeroSpeeds()
 base::commands::Joints Task::rectifySteering()
 {
     base::commands::Joints rJoints;
-    rJoints.resize(19);
+    rJoints.resize(18);
     rJoints.names[0] = "WHEEL_DRIVE_FL";
     rJoints.names[1] = "WHEEL_DRIVE_FR";
     rJoints.names[2] = "WHEEL_DRIVE_CL";
@@ -230,23 +230,21 @@ base::commands::Joints Task::rectifySteering()
 
     rJoints.names[6] = "WHEEL_STEER_FL";
     rJoints.names[7] = "WHEEL_STEER_FR";
-    rJoints.names[8] = "WHEEL_STEER_BL";
-    rJoints.names[9] = "WHEEL_STEER_BR";
+    rJoints.names[8] = "WHEEL_STEER_CL";
+    rJoints.names[9] = "WHEEL_STEER_CR";
+    rJoints.names[10] = "WHEEL_STEER_BL";
+    rJoints.names[11] = "WHEEL_STEER_BR";
 
-    rJoints.names[10] = "WHEEL_WALK_FL";
-    rJoints.names[11] = "WHEEL_WALK_FR";
-    rJoints.names[12] = "WHEEL_WALK_CL";
-    rJoints.names[13] = "WHEEL_WALK_CR";
-    rJoints.names[14] = "WHEEL_WALK_BL";
-    rJoints.names[15] = "WHEEL_WALK_BR";
+    rJoints.names[12] = "WHEEL_WALK_FL";
+    rJoints.names[13] = "WHEEL_WALK_FR";
+    rJoints.names[14] = "WHEEL_WALK_CL";
+    rJoints.names[15] = "WHEEL_WALK_CR";
+    rJoints.names[16] = "WHEEL_WALK_BL";
+    rJoints.names[17] = "WHEEL_WALK_BR";
 
-    rJoints.names[16] = "WHEEL_DRIVE_GROUP";
-    rJoints.names[17] = "WHEEL_STEER_GROUP";
-    rJoints.names[18] = "WHEEL_WALK_GROUP";
-
-    for (unsigned int i = 0; i < 16; i++)
+    for (unsigned int i = 0; i < 18; i++)
     {
-        if ((i > 5)&&(i < 10))
+        if ((i > 5)&&(i < 12))
         {
             rJoints[i].position = 0;
             rJoints[i].speed = base::NaN<double>();
@@ -257,11 +255,7 @@ base::commands::Joints Task::rectifySteering()
             rJoints[i].position = base::NaN<double>();
         }
     }
-    for(uint i=16; i<19; i++)
-    {
-        rJoints[i].speed = base::NaN<double>();
-        rJoints[i].position = base::NaN<double>();
-    }
+
     return rJoints;
 }
 
