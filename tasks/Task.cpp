@@ -245,6 +245,7 @@ base::commands::Joints Task::rectifySteering()
     rJoints.names[16] = "WHEEL_WALK_BL";
     rJoints.names[17] = "WHEEL_WALK_BR";
 
+>>>>>>> c57fe1e2fcf444545bf6ab175e08bb093671e15e
     for (unsigned int i = 0; i < 18; i++)
     {
         if ((i > 5)&&(i < 12))
