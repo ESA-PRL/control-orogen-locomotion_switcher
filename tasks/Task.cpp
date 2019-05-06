@@ -45,6 +45,9 @@ void Task::updateHook()
 {
     TaskBase::updateHook();
 
+    // LOG_ERROR("THIS IS A TEST ERROR");
+
+
     bool new_mode = false;
     if (_locomotion_mode_override.read(locomotionModeOverride) == RTT::NewData)
     {
